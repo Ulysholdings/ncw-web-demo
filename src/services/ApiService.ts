@@ -1,6 +1,6 @@
 import { IBackupInfo, INewTransactionData, IPassphraseInfo } from "../IAppState";
 import { IAuthManager } from "../auth/IAuthManager";
-import { Manager, Socket, io } from "socket.io-client";
+import { Manager } from "socket.io-client";
 
 export type TTransactionStatus =
   | "PENDING_SIGNATURE"
@@ -80,6 +80,7 @@ export interface ICreateWeb3ConnectionResponse {
   id: string;
   sessionMetadata: ISessionMetadata;
 }
+
 export interface ISessionMetadata {
   appUrl: string;
   appIcon?: string;
@@ -156,14 +157,14 @@ export interface IAssetBalance {
 
 type RpcResponse =
   | {
-      response: unknown;
-    }
+  response: unknown;
+}
   | {
-      error: {
-        message: string;
-        code?: number;
-      };
-    };
+  error: {
+    message: string;
+    code?: number;
+  };
+};
 
 export type TMessageHandler = (message: any) => Promise<void>;
 export type TTxHandler = (tx: ITransactionData) => void;
@@ -178,25 +179,28 @@ export class ApiService {
   private _disposed: boolean = false;
   private _pollingTxsActive: Map<string, boolean> = new Map();
 
-  private manager: Manager;
-  private socket: Socket;
+  // private manager: Manager;
+
+  // private socket: Socket;
 
   constructor(
     baseUrl: string,
-    private readonly authManager: IAuthManager,
+    private readonly authManager: IAuthManager
   ) {
     this._baseUrl = baseUrl;
     if (this._baseUrl.endsWith("/")) {
       this._baseUrl = this._baseUrl.slice(0, -1);
     }
 
-    this.manager = new Manager(this._baseUrl, { autoConnect: true });
-    this.socket = this.manager.socket("/", {
-      auth: async (cb) => cb({ token: await this.authManager.getAccessToken() }),
-    });
+    // this.manager = new Manager(this._baseUrl, { autoConnect: true });
+    // console.log("WOIDJOWEIDJOWEIDJWOE BASED URL", this._baseUrl);
 
-    this.socket.on("connect", () => console.log("websocket connected"));
-    this.socket.on("disconnect", () => console.log("websocket disconnected"));
+    // this.socket = this.manager.socket("/", {
+    //   auth: async (cb) => cb({ token: await this.authManager.getAccessToken() })
+    // });
+    //
+    // this.socket.on("connect", () => console.log("websocket connected"));
+    // this.socket.on("disconnect", () => console.log("websocket disconnected"));
   }
 
   public async login(): Promise<string> {
@@ -232,7 +236,7 @@ export class ApiService {
   }
 
   public async getPassphraseInfos(): Promise<{ passphrases: IPassphraseInfo[] }> {
-    const response = await this._getCall(`api/passphrase/`);
+    const response = await this._getCall(`api/passphrase`);
     return await response.json();
   }
 
@@ -244,19 +248,20 @@ export class ApiService {
   public async askToJoinWalletExisting(deviceId: string, walletId: string): Promise<string> {
     const response = await this._postCall(`api/devices/${deviceId}/join`, { walletId });
     return response.walletId;
-  }
+  };
 
   public async sendMessage(deviceId: string, message: string): Promise<any> {
-    if (this.socket.connected) {
-      const response: RpcResponse = await this.socket.emitWithAck("rpc", deviceId, message);
-      if (!("response" in response)) {
-        console.error("Failed to invoke RPC", response?.error);
-        throw new Error("Failed to invoke RPC");
-      }
-      
-      return response.response;
-    }
-    
+    // if (this.socket.connected) {
+    //   const response: RpcResponse = await this.socket.emitWithAck("rpc", deviceId, message);
+    //   if (!("response" in response)) {
+    //     console.error("Failed to invoke RPC", response?.error);
+    //     throw new Error("Failed to invoke RPC");
+    //   }
+    //
+    //   return response.response;
+    // }
+    console.log("INVOKE PRC", "deviceID", deviceId, "message", message);
+
     return this._postCall(`api/devices/${deviceId}/rpc`, { message });
   }
 
@@ -306,7 +311,8 @@ export class ApiService {
   }
 
   public async getAccounts(deviceId: string): Promise<{ walletId: string; accountId: number }[]> {
-    const response = await this._getCall(`api/devices/${deviceId}/accounts/`);
+    // const response = await this._getCall(`api/devices/${deviceId}/accounts/`);
+    const response = await this._getCall(`api/devices/${deviceId}/accounts`);
     return await response.json();
   }
 
@@ -375,7 +381,7 @@ export class ApiService {
     while (!this._disposed) {
       try {
         const response = await this._getCall(
-          `api/devices/${deviceId}/transactions?poll=true&startDate=${startDate}&details=true`,
+          `api/devices/${deviceId}/transactions?poll=true&startDate=${startDate}&details=true`
         );
         if (!response.ok) {
           await sleep(5_000);
@@ -419,15 +425,15 @@ export class ApiService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        authorization: `Bearer ${token}`,
+        authorization: `Bearer ${token}`
       },
-      body: JSON.stringify(body ?? {}),
+      body: JSON.stringify(body ?? {})
     });
 
     const responseJson = await response.json();
     if (!response.ok) {
       throw new Error(
-        `A call to "${path}" failed with status ${response.status}, data: ${JSON.stringify(responseJson)}`,
+        `A call to "${path}" failed with status ${response.status}, data: ${JSON.stringify(responseJson)}`
       );
     }
     return responseJson;
@@ -438,8 +444,8 @@ export class ApiService {
     await fetch(`${this._baseUrl}/${path}`, {
       method: "DELETE",
       headers: {
-        authorization: `Bearer ${token}`,
-      },
+        authorization: `Bearer ${token}`
+      }
     });
   }
 
@@ -448,8 +454,8 @@ export class ApiService {
     const response = await fetch(`${this._baseUrl}/${path}`, {
       method: "GET",
       headers: {
-        authorization: `Bearer ${token}`,
-      },
+        authorization: `Bearer ${token}`
+      }
     });
     return response;
   }

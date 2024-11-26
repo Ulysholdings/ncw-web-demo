@@ -382,6 +382,10 @@ export const useAppStore = create<IAppState>()((set, get) => {
             logger,
           });
         }
+        console.log(fireblocksNCW)
+        console.log("DEVICE_ID", deviceId)
+        console.log("PHYSICAL_DEVICE_ID", fireblocksNCW.getPhysicalDeviceId())
+
 
         txsUnsubscriber = apiService.listenToTxs(deviceId, (tx: ITransactionData) => {
           const txs = updateOrAddTx(get().txs, tx);
@@ -389,6 +393,7 @@ export const useAppStore = create<IAppState>()((set, get) => {
         });
         const keysStatus = await fireblocksNCW.getKeysStatus();
         set((state) => ({ ...state, keysStatus, fireblocksNCWStatus: "sdk_available" }));
+
       } catch (e) {
         console.error(e);
         fireblocksNCW = null;
