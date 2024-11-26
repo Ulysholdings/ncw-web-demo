@@ -1,0 +1,25 @@
+name: ncw-web-demo
+id: ari:cloud:compass:286a8365-dd2a-45f9-ad65-d12a6bf0d163:component/991f97af-bfe2-48e6-bde7-515daf687649/87c811cf-d9ad-4f76-a270-9029a5f807ed
+description: An example usage of @fireblocks/ncw-js-sdk for managing non-custodial wallets
+configVersion: 1
+typeId: SERVICE
+fields:
+  tier: 4
+links:
+  - name: null
+    type: REPOSITORY
+    url: https://github.com/Ulysholdings/ncw-web-demo
+relationships:
+  DEPENDS_ON: []
+labels:
+  - source:github
+customFields:
+  - name: Access to PII
+    type: single_select
+    value: null
+  - name: Contract Renewal Date
+    type: text
+    value: null
+  - name: Monthly Cost (USD)
+    type: number
+    value: null
